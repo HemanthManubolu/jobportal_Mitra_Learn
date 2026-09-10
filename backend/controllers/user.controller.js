@@ -14,6 +14,15 @@ const uploadFile = async (file) => {
 };
 const emailIsValid = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 const phoneIsValid = (phone) => /^\+?[0-9\s()-]{7,20}$/.test(String(phone));
+const authCookieOptions = () => {
+    const production = process.env.NODE_ENV === 'production' || process.env.VERCEL === '1';
+    return {
+        httpOnly: true,
+        secure: production,
+        sameSite: production ? 'none' : 'lax',
+        path: '/',
+    };
+};
 
 export const register = async (req, res, next) => {
     try {
@@ -38,14 +47,12 @@ export const login = async (req, res, next) => {
         if (!user || !(await bcrypt.compare(password, user.password))) return res.status(401).json({ message: "Incorrect email or password.", success: false });
         if (role && role !== user.role) return res.status(403).json({ message: "Account does not match the selected role.", success: false });
         const token = jwt.sign({ userId: user._id, role: user.role }, process.env.SECRET_KEY, { expiresIn: process.env.JWT_EXPIRES_IN || '1d' });
-        const production = process.env.NODE_ENV === 'production';
-        res.status(200).cookie("token", token, { maxAge: 86400000, httpOnly: true, secure: production, sameSite: production ? 'none' : 'lax' }).json({ message: `Welcome back ${user.fullname}`, user: publicUser(user), token, success: true });
+        res.status(200).cookie("token", token, { ...authCookieOptions(), maxAge: 86400000 }).json({ message: `Welcome back ${user.fullname}`, user: publicUser(user), success: true });
     } catch (error) { next(error); }
 };
 
 export const logout = (req, res) => {
-    const production = process.env.NODE_ENV === 'production';
-    return res.status(200).clearCookie("token", { httpOnly: true, secure: production, sameSite: production ? 'none' : 'lax' }).json({ message: "Logged out successfully.", success: true });
+    return res.status(200).clearCookie("token", authCookieOptions()).json({ message: "Logged out successfully.", success: true });
 };
 export const updateProfile = async (req, res, next) => {
     try {
