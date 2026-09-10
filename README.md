@@ -1,70 +1,166 @@
-# JobPortal
+# JobPortal — Full Stack Job Portal
 
-A MERN job portal with server-enforced candidate, employer, and administrator roles. The existing React/Vite UI is retained; employer tooling now lives under `/employer`, while `/admin/dashboard` is reserved for administrators.
+A modern full-stack job portal that connects candidates and employers through a secure, role-based platform.
 
-## Features
+Candidates can discover, search, filter, save, and apply for jobs. Employers can create and manage job postings and view applicants. Administrators can monitor the platform, view system statistics, and import jobs from permitted public job sources through an admin-controlled scraping workflow.
 
-- Candidates search, filter, sort, paginate, save jobs, apply once, manage their profile/resume, and view applications.
-- Employers manage only their own companies, jobs, applicants, and application decisions.
-- Administrators view platform metrics, users, companies, jobs, applications, and run the permitted public-source importer.
-- Cookie/Bearer JWT authentication, RBAC, ownership checks, request throttling, MongoDB indexes, error responses, and optional Cloudinary uploads.
+---
 
-## Architecture and data
+## Live Application
 
-`frontend/` is React + Vite + Redux + Tailwind. `backend/` is Express + Mongoose. MongoDB collections are `users`, `companies`, `jobs`, `applications`, and `savedjobs`. Important uniqueness constraints include email, application `(job, applicant)`, saved job `(user, job)`, and scraped job `(source, sourceUrl)`.
+### Frontend
 
-The Job document supports title, company reference, location, work mode, employment type, salary, experience, skills, description, requirements, benefits, deadline, positions, lifecycle status, creator, and source metadata.
+https://jobportal-liart-one.vercel.app
 
-### Roles and dashboards
+### Backend API
 
-- **Candidate:** browse/search/filter/sort jobs, save jobs, apply once, update a profile/resume, and use `/candidate/dashboard` for live application and saved-job totals.
-- **Employer:** owns companies and job listings only; `/employer/dashboard` contains only that employer's job and applicant totals, recent jobs, and recent applications.
-- **Admin:** is created only with the server-side command and can access platform statistics and paginated management endpoints. Public registration rejects the `admin` role.
+https://jobportal-backend-sandy-psi.vercel.app
 
-The backend enforces JWT authentication, role checks, and ownership checks on every protected endpoint. Expired/closed jobs cannot be applied to. A deleted job also removes associated saved-job and application records.
+### API Documentation — Swagger
 
-### REST API
+https://jobportal-backend-sandy-psi.vercel.app/api-docs
 
-Public job queries support `search`, `location`, `workMode`, `employmentType`, `experienceLevel`, `skills`, `minSalary`, `maxSalary`, `status`, `page`, `limit`, `sortBy`, and `sortOrder`. Limits are capped at 100 and sorting is whitelisted. The canonical endpoints are documented at `/api-docs`; the original singular routes remain for UI compatibility.
+### Backend Health Check
 
-Admin collection endpoints (`/admin/users`, `/admin/jobs`, `/admin/companies`, `/admin/applications`) are paginated with `page` and `limit`. Password hashes are never returned. Import the Postman collection to exercise candidate, employer, and admin requests with `{{baseUrl}}`, `{{token}}`, `{{jobId}}`, `{{companyId}}`, and `{{applicationId}}` variables.
+https://jobportal-backend-sandy-psi.vercel.app/health
 
-## Install and run
+---
 
-```bash
-cd backend
-copy .env.example .env
-npm install
-npm run dev
-```
+#  Features
 
-In a second terminal:
+## 👤 Candidate Features
 
-```bash
-cd frontend
-copy .env.example .env
-npm install
-npm run dev
-```
+Candidates can:
 
-Use `npm run build` in `frontend` for the production build and `npm start` in `backend` for production startup. Run `npm run migrate:roles` in `backend` once when upgrading a database containing the legacy `student` and `recruiter` role values. Create the first administrator only from the backend environment with `npm run create:admin`; public registration intentionally cannot create admins.
+- Register an account
+- Login securely
+- Logout securely
+- Browse available jobs
+- Search jobs
+- Filter jobs
+- View complete job details
+- Save/bookmark jobs
+- Apply for jobs
+- View submitted applications
+- Manage their profile
+- Access a personalized candidate dashboard
 
-## Environment
+### Job Search and Filters
 
-Backend: `MONGO_URI`, `SECRET_KEY`, `CLIENT_URL`, `PORT`, `NODE_ENV`, optionally `JWT_EXPIRES_IN`, `CLOUD_NAME`, `API_KEY`, and `API_SECRET`. Frontend: `VITE_API_URL`, e.g. `https://api.example.com/api/v1`. Do not commit `.env` files.
+Candidates can search and filter jobs using:
 
-## API and deployment
+- Job title
+- Company
+- Location
+- Skills
+- Work mode
+- Employment type
+- Experience level
 
-The clean API is under `/api/v1`; legacy singular endpoints remain to avoid breaking the original UI. Swagger UI is served from `/api-docs` and OpenAPI JSON from `/api-docs.json`. Import [postman/JobPortal.postman_collection.json](postman/JobPortal.postman_collection.json) into Postman.
+Multiple filters can be combined with keyword search.
 
-Deploy the frontend to Vercel (set `VITE_API_URL`) and the backend to Render/Railway/AWS (set `CLIENT_URL` to the deployed frontend). Use MongoDB Atlas, allow the backend's network address, and use HTTPS in production so the secure cross-site auth cookie works.
+---
 
-## Scraping
+# 🏢 Employer Features
 
-`POST /api/v1/scrape/jobs` is admin-only. It imports configured permitted public feeds (currently Remotive and Jobicy), normalizes records into Job/Company documents, and reports additions, skipped duplicates, and errors. It does not bypass authentication, robots controls, or anti-bot systems. Scheduling is intentionally left to the host scheduler rather than adding a runtime dependency.
+Employers can:
 
-Scraped jobs are marked `isAggregated: true`, use the invoking admin as their safe system creator, and are unique by `source + sourceUrl`. Public-source logo URLs are stored only as company logos—never as websites. Configure an external platform scheduler to call the protected scraper endpoint no more often than hourly, respecting the configured sources' published rate guidance.
+- Register as an Employer
+- Login securely
+- Create job postings
+- Edit job postings
+- Delete job postings
+- Close job postings
+- View their posted jobs
+- View applicants
+- Manage company information
+- Access an Employer Dashboard
 
-## Deployment checklist
+Employers can manage their complete job-posting lifecycle from the dashboard.
 
-For Vercel, set `VITE_API_URL` to the deployed backend's `/api/v1` URL. For Render, Railway, or AWS, set `MONGO_URI`, a long random `SECRET_KEY`, and `CLIENT_URL` to the deployed frontend origin. `NODE_ENV=production` enables secure, cross-site JWT cookies; HTTPS is required. Use MongoDB Atlas as the production database—MongoDB is explicitly permitted by the assessment—and set Cloudinary variables only if uploads are enabled. No live deployment is included in this repository.
+---
+
+# 🛡️ Admin Features
+
+The application includes a dedicated Admin Dashboard with role-based access control.
+
+Admins have access to platform-level management and monitoring functionality.
+
+## Admin Dashboard
+
+The Admin Dashboard provides:
+
+- Total users
+- Total jobs
+- Total companies
+- Total applications
+- Jobs scraped/added today
+- Top job skills
+- Top companies
+- Top job locations
+
+## Admin Job Scraper
+
+Administrators can:
+
+- Fetch jobs from supported public job sources
+- Preview jobs before importing
+- Select individual jobs for import
+- Deselect jobs
+- Edit job information before importing
+- Import selected jobs
+- Detect duplicate jobs
+- Review import results
+
+Fetching jobs creates a temporary preview and does not automatically save them to MongoDB.
+
+Jobs are only persisted when the administrator explicitly imports them.
+
+---
+
+# 🔎 Job Scraping
+
+The platform supports job aggregation from permitted public job sources.
+
+## Supported Sources
+
+Currently supported sources include:
+
+- Remotive
+- Jobicy
+
+The scraper retrieves publicly available job information and converts it into the application's standard job format.
+
+---
+
+## Scraping Workflow
+
+```text
+Admin Login
+     │
+     ▼
+Admin Dashboard
+     │
+     ▼
+Scraper Preview
+     │
+     ▼
+Fetch Jobs
+     │
+     ▼
+Review Jobs
+     │
+     ▼
+Select Jobs
+     │
+     ▼
+Edit if Required
+     │
+     ▼
+Import Selected Jobs
+     │
+     ▼
+Duplicate Check
+     │
+     ▼
+MongoDB
