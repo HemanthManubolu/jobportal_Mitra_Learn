@@ -1,0 +1,43 @@
+{
+  "info": { "name": "JobPortal API", "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json" },
+  "variable": [{ "key": "baseUrl", "value": "http://localhost:8000/api/v1" }, { "key": "token", "value": "" }, { "key": "jobId", "value": "" }, { "key": "companyId", "value": "" }, { "key": "applicationId", "value": "" }],
+  "item": [
+    { "name": "Auth", "item": [
+      { "name": "Register candidate", "request": { "method": "POST", "url": "{{baseUrl}}/auth/register", "body": { "mode": "raw", "raw": "{\n  \"fullname\": \"Candidate User\",\n  \"email\": \"candidate@example.com\",\n  \"phoneNumber\": \"9999999999\",\n  \"password\": \"Password123!\",\n  \"role\": \"candidate\"\n}", "options": { "raw": { "language": "json" } } } } },
+      { "name": "Register employer", "request": { "method": "POST", "url": "{{baseUrl}}/auth/register", "body": { "mode": "raw", "raw": "{\"fullname\":\"Employer User\",\"email\":\"employer@example.com\",\"phoneNumber\":\"9999999998\",\"password\":\"Password123!\",\"role\":\"employer\"}" } } },
+      { "name": "Login", "request": { "method": "POST", "url": "{{baseUrl}}/auth/login", "body": { "mode": "raw", "raw": "{\"email\":\"candidate@example.com\",\"password\":\"Password123!\"}" } } },
+      { "name": "Logout", "request": { "method": "POST", "url": "{{baseUrl}}/auth/logout" } }
+    ] },
+    { "name": "Jobs", "item": [
+      { "name": "List / search / filters / pagination", "request": { "method": "GET", "url": "{{baseUrl}}/jobs?search=react&location=Hyderabad&workMode=Remote&employmentType=Full-time&skills=javascript&page=1&limit=10&sortBy=createdAt&sortOrder=desc" } },
+      { "name": "Details", "request": { "method": "GET", "url": "{{baseUrl}}/jobs/{{jobId}}" } },
+      { "name": "Create", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/jobs", "body": { "mode": "raw", "raw": "{\"title\":\"React Developer\",\"description\":\"Build job portal experiences.\",\"companyId\":\"{{companyId}}\",\"location\":\"Hyderabad\",\"workMode\":\"Hybrid\",\"employmentType\":\"Full-time\",\"salary\":1200000,\"experienceLevel\":\"Mid\",\"position\":1,\"skills\":[\"React\",\"JavaScript\"],\"deadline\":\"2030-12-31\"}" } } },
+      { "name": "Update", "request": { "method": "PUT", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/jobs/{{jobId}}", "body": { "mode": "raw", "raw": "{\"skills\":[\"React\",\"TypeScript\"]}" } } },
+      { "name": "Close", "request": { "method": "PATCH", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/jobs/{{jobId}}/close" } },
+      { "name": "Delete", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/jobs/{{jobId}}" } }
+    ] },
+    { "name": "Applications", "item": [
+      { "name": "Apply", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/jobs/{{jobId}}/apply" } },
+      { "name": "My applications", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/applications" } },
+      { "name": "Employer applicants", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/jobs/{{jobId}}/applicants" } },
+      { "name": "Update status", "request": { "method": "PATCH", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/applications/{{applicationId}}/status", "body": { "mode": "raw", "raw": "{\"status\":\"accepted\"}" } } }
+    ] },
+    { "name": "Saved jobs", "item": [
+      { "name": "Save", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/jobs/{{jobId}}/save" } },
+      { "name": "Unsave", "request": { "method": "DELETE", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/jobs/{{jobId}}/save" } },
+      { "name": "List", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/jobs/saved" } }
+    ] },
+    { "name": "Employer", "item": [
+      { "name": "Create company", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/company/register", "body": { "mode": "raw", "raw": "{\"companyName\":\"Example Co\"}" } } },
+      { "name": "Employer dashboard", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/dashboard" } }
+    ] },
+    { "name": "Admin", "item": [
+      { "name": "Dashboard", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/admin/dashboard" } },
+      { "name": "Users", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/admin/users?page=1&limit=20" } },
+      { "name": "Jobs", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/admin/jobs?page=1&limit=20" } },
+      { "name": "Companies", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/admin/companies?page=1&limit=20" } },
+      { "name": "Applications", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/admin/applications?page=1&limit=20" } },
+      { "name": "Scrape Remotive", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/scrape/jobs" } }
+    ] }
+  ]
+}

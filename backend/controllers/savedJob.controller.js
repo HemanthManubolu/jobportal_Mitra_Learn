@@ -1,0 +1,7 @@
+import mongoose from "mongoose";
+import { SavedJob } from "../models/savedJob.model.js";
+import { Job } from "../models/job.model.js";
+import { withNormalizedSkills } from '../utils/jobResponse.js';
+export const saveJob = async (req, res, next) => { try { if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(400).json({ success: false, message: "Invalid job id." }); if (!await Job.exists({ _id: req.params.id, status: 'active' })) return res.status(404).json({ success: false, message: "Active job not found." }); const saved = await SavedJob.findOneAndUpdate({ user: req.id, job: req.params.id }, {}, { new: true, upsert: true, setDefaultsOnInsert: true }); res.status(201).json({ success: true, message: "Job saved.", savedJob: saved }); } catch (error) { next(error); } };
+export const unsaveJob = async (req, res, next) => { try { const result = await SavedJob.findOneAndDelete({ user: req.id, job: req.params.id }); if (!result) return res.status(404).json({ success: false, message: "Saved job not found." }); res.json({ success: true, message: "Job removed from saved jobs." }); } catch (error) { next(error); } };
+export const getSavedJobs = async (req, res, next) => { try { const savedJobs = await SavedJob.find({ user: req.id }).sort({ createdAt: -1 }).populate({ path: 'job', populate: { path: 'company' } }); res.json({ success: true, savedJobs, jobs: savedJobs.map((saved) => saved.job).filter(Boolean).map(withNormalizedSkills) }); } catch (error) { next(error); } };

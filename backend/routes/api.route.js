@@ -1,0 +1,25 @@
+import express from "express";
+import isAuthenticated from "../middlewares/isAuthenticated.js";
+import { authorizeRoles } from "../middlewares/authorizeRoles.js";
+import { register, login, logout, updateProfile, getMe } from "../controllers/user.controller.js";
+import { createJob, getAllJobs, getJobById, updateJob, deleteJob, closeJob, getEmployerJobs } from "../controllers/job.controller.js";
+import { applyJob, getAppliedJobs, getApplicants, updateStatus, getAllApplications } from "../controllers/application.controller.js";
+import { saveJob, unsaveJob, getSavedJobs } from "../controllers/savedJob.controller.js";
+import { dashboard, users, jobs, companies } from "../controllers/admin.controller.js";
+import { scrapeJobs, previewJobs, importSelectedJobs } from "../controllers/scrape.controller.js";
+import { personalDashboard } from "../controllers/dashboard.controller.js";
+import { singleUpload } from "../middlewares/mutler.js";
+import { rateLimit } from "../middlewares/rateLimit.js";
+
+const router = express.Router();
+router.post('/auth/register', rateLimit({ max: 10 }), singleUpload, register);
+router.post('/auth/login', rateLimit({ max: 10 }), login); router.post('/auth/logout', logout); router.get('/auth/me', isAuthenticated, getMe); router.put('/profile', isAuthenticated, singleUpload, updateProfile);
+router.get('/jobs', getAllJobs); router.get('/jobs/saved', isAuthenticated, authorizeRoles('candidate'), getSavedJobs); router.post('/jobs/:id/save', isAuthenticated, authorizeRoles('candidate'), saveJob); router.delete('/jobs/:id/save', isAuthenticated, authorizeRoles('candidate'), unsaveJob); router.post('/jobs/:id/apply', isAuthenticated, authorizeRoles('candidate'), applyJob);
+router.post('/jobs', isAuthenticated, authorizeRoles('employer'), createJob); router.get('/jobs/employer/mine', isAuthenticated, authorizeRoles('employer'), getEmployerJobs); router.put('/jobs/:id', isAuthenticated, authorizeRoles('employer'), updateJob); router.delete('/jobs/:id', isAuthenticated, authorizeRoles('employer'), deleteJob); router.patch('/jobs/:id/close', isAuthenticated, authorizeRoles('employer'), closeJob); router.get('/jobs/:id/applicants', isAuthenticated, authorizeRoles('employer', 'admin'), getApplicants); router.get('/jobs/:id', getJobById);
+router.get('/applications', isAuthenticated, authorizeRoles('candidate'), getAppliedJobs); router.patch('/applications/:id/status', isAuthenticated, authorizeRoles('employer', 'admin'), updateStatus);
+router.get('/dashboard', isAuthenticated, authorizeRoles('candidate', 'employer'), personalDashboard);
+router.get('/admin/dashboard', isAuthenticated, authorizeRoles('admin'), dashboard); router.get('/admin/users', isAuthenticated, authorizeRoles('admin'), users); router.get('/admin/jobs', isAuthenticated, authorizeRoles('admin'), jobs); router.get('/admin/companies', isAuthenticated, authorizeRoles('admin'), companies); router.get('/admin/applications', isAuthenticated, authorizeRoles('admin'), getAllApplications);
+router.post('/scrape/jobs', isAuthenticated, authorizeRoles('admin'), rateLimit({ max: 5 }), scrapeJobs);
+router.get('/scrape/preview', isAuthenticated, authorizeRoles('admin'), rateLimit({ max: 5 }), previewJobs);
+router.post('/scrape/import', isAuthenticated, authorizeRoles('admin'), rateLimit({ max: 10 }), importSelectedJobs);
+export default router;

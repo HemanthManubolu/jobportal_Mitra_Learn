@@ -1,0 +1,10 @@
+import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+import { User } from '../models/user.model.js';
+dotenv.config();
+if (!process.env.MONGO_URI) throw new Error('MONGO_URI is required');
+await mongoose.connect(process.env.MONGO_URI);
+const candidates = await User.updateMany({ role: 'student' }, { $set: { role: 'candidate' } });
+const employers = await User.updateMany({ role: 'recruiter' }, { $set: { role: 'employer' } });
+console.log(`Migrated ${candidates.modifiedCount} candidates and ${employers.modifiedCount} employers.`);
+await mongoose.disconnect();
